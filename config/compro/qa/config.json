@@ -1,0 +1,13 @@
+{
+  "app": "dls-compro-dev-sam-seed",
+  "region": "us-west-2",
+  "stack": "dls-compro-qa-sam-seed",
+  "s3":{
+    "bucket_name": "dls-compro-qa-sam-seed",
+    "bucket_prefix": "sam",
+    "packaged_filename": "packaged.yaml"
+  },
+  "parameters":{
+    "Environment": "qa"
+  }
+}

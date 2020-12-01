@@ -1,0 +1,72 @@
+swagger: "2.0"
+info:
+  description: "Open API definitions of API Gateway endpoints for DLS AWS Serverless Seed application"
+  version: "1.0.0"
+  title: "Seed API"
+host: "lti-api-gateway.com"
+basePath: "/v1"
+schemes:
+- "https"
+x-amazon-apigateway-request-validators:
+  validate-body:
+    validateRequestBody: true
+paths:
+  /exchange:
+    post:
+      summary: "Get Currency Exchange Information"
+      description: "Return conversion rate of 2 currencies"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Base and Target currency codes"
+        required: true
+        schema:
+          $ref: "#/definitions/ExchangeRate"
+      responses:
+        200:
+          description: "Successful Operation"
+        400:
+          description: "Missing Required Paramters or invalid Currency Codes"
+      x-amazon-apigateway-request-validator: validate-body
+      x-amazon-apigateway-integration:
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ExchangeRateFunction.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+  /hello:
+    get:
+      summary: "Hello World Message"
+      description: "Hello World output by executing lambda function"
+      operationId: "HelloWorld"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "query"
+        description: "Passing custom name instead of 'world' in Hello World"
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+      x-amazon-apigateway-integration:
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HelloWorldFunction.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+definitions:
+  ExchangeRate:
+    type: "object"
+    required:
+    - "base"
+    - "target"
+    properties:
+      base:
+        type: "string"
+      target:
+        type: "string"

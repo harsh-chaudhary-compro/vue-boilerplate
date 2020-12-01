@@ -1,0 +1,16 @@
+{
+  "name": "hello_world",
+  "version": "1.0.0",
+  "description": "Hello world sample for NodeJS",
+  "main": "index.js",
+  "repository": "https://github.com/comprodls/aws-serverless-seed.git",
+  "author": "TBA",
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha tests/*.test.js"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4"
+  }
+}

@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: DLS AWS Serverless Reference Arch.
+
+Globals:
+  Function:
+    MemorySize: 128
+    Timeout: 3
+    Runtime: nodejs12.x
+
+Parameters: 
+  Environment: 
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - stage
+      - qa
+      - prod
+
+Resources:
+  SeedApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: AWS Serverless API
+      StageName: !Ref Environment
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./swagger.yaml
+
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "dls-compro-${Environment}-sam-seed-HelloWorldFunction"
+      CodeUri: functions/hello-world/
+      Handler: hello.handler
+      Description: Hello World Function
+      Role: !Sub arn:aws:iam::${AWS::AccountId}:role/dls_compro_lambda_${Environment}_role
+      Layers:
+        - !Ref LTILambdaDependencies
+      Environment:
+        Variables:
+          CODE_ENV: !Ref Environment
+          HELLO_WORLD_TABLE_NAME: !Sub "dls-compro-${Environment}-sam-seed-HelloWorldTable"
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            RestApiId: !Ref SeedApiGateway
+            Path: /hello
+            Method: GET
+
+  ExchangeRateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "dls-compro-${Environment}-sam-seed-ExchangeRateFunction"
+      CodeUri: functions/exchange-rate/
+      Handler: index.handler
+      Description: Function to Get Currency Exchange Rate
+      Role: !Sub arn:aws:iam::${AWS::AccountId}:role/dls_compro_lambda_${Environment}_role
+      Layers:
+        - !Ref LTILambdaDependencies
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            RestApiId: !Ref SeedApiGateway
+            Path: /exchange
+            Method: POST
+
+  HelloWorldTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "dls-compro-${Environment}-sam-seed-HelloWorldTable"
+      AttributeDefinitions:
+        -
+          AttributeName: "partition_key"
+          AttributeType: "S"
+        -
+          AttributeName: "sort_key"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "partition_key"
+          KeyType: "HASH"
+        -
+          AttributeName: "sort_key"
+          KeyType: "RANGE"
+      BillingMode: PAY_PER_REQUEST
+
+  LTILambdaDependencies:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+        LayerName: LtiLambdaDependencies
+        Description: Dependencies for lambdas
+        ContentUri: dependencies/
+        CompatibleRuntimes:
+          - nodejs12.x
+        RetentionPolicy: Retain
+
+Outputs:
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
+  ExchangeRateFunction:
+    Description: "Exchange Rate Lambda Function ARN"
+    Value: !GetAtt ExchangeRateFunction.Arn
+  SeedApiGateway:
+    Description: "Seed API EndPoint"
+    Value: !Sub "https://${SeedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}"
+    
