@@ -41,16 +41,16 @@ npm run build
 
 ## Vue Configurations 
 Vue js offers a number of configuration options while creating a new project using Vue Cli. This project is using the following Configuration Options
-- Babel - JavaScript transcompiler that is mainly used to convert ECMAScript 2015+ code into a backwards compatible version of JavaScript that can be run by older JavaScript engines. 
-- Router - Official Vue js router to provide client side routing for a Single Page application
+- **Babel** - JavaScript transcompiler that is mainly used to convert ECMAScript 2015+ code into a backwards compatible version of JavaScript that can be run by older JavaScript engines. 
+- **Router** - Official Vue js router to provide client side routing for a Single Page application
     - Configured to use 'History' Mode
-- Vuex - Vuex is a state management library for Vue.js applications. It serves as a centralized store for all the components in an application
-- CSS Pre-processor - CSS preprocessor lets you generate CSS from the preprocessor's own unique syntax - providing features such as variables, mixins which doesn't exist in CSS. 
+- **Vuex** - Vuex is a state management library for Vue.js applications. It serves as a centralized store for all the components in an application
+- **CSS Pre-processor** - CSS preprocessor lets you generate CSS from the preprocessor's own unique syntax - providing features such as variables, mixins which doesn't exist in CSS. 
     - Sass/SCSS (with node-sass) is being used in this project
-- Linter - A static code analysis tool for identifying problematic patterns found in JavaScript code to maintain code quality and to have consistent coding style.
+- **Linter** - A static code analysis tool for identifying problematic patterns found in JavaScript code to maintain code quality and to have consistent coding style.
     - ESLint + Airbnb configuration
     - Lint on save
-- Unit Testing - Unit tests are automated tests written to ensure that a section of an application meets its behaviour as intended. 
+- **Unit Testing** - Unit tests are automated tests written to ensure that a section of an application meets its behaviour as intended. 
     - 'Mocha' is selected as unit testing solution
 
 Configuration files for Babel and ESLint are placed in the dedicated config files at the rrot of the project
