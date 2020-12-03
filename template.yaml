@@ -1,0 +1,152 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: DLS AWS Serverless Reference Arch.
+
+Globals:
+  Function:
+    MemorySize: 128
+    Timeout: 3
+    Runtime: nodejs12.x
+
+Parameters: 
+  Environment: 
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - stage
+      - qa
+      - prod
+
+Resources:
+  SeedApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: AWS Serverless API
+      StageName: !Ref Environment
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./swagger.yaml
+
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "dls-compro-${Environment}-sam-seed-HelloWorldFunction"
+      CodeUri: functions/hello-world/
+      Handler: hello.handler
+      Description: Hello World Function
+      Role: !Sub arn:aws:iam::${AWS::AccountId}:role/dls_compro_lambda_${Environment}_role
+      Layers:
+        - !Ref LTILambdaDependencies
+      Environment:
+        Variables:
+          CODE_ENV: !Ref Environment
+          HELLO_WORLD_TABLE_NAME: !Sub "dls-compro-${Environment}-sam-seed-HelloWorldTable"
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            RestApiId: !Ref SeedApiGateway
+            Path: /hello
+            Method: GET
+
+  ExchangeRateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "dls-compro-${Environment}-sam-seed-ExchangeRateFunction"
+      CodeUri: functions/exchange-rate/
+      Handler: index.handler
+      Description: Function to Get Currency Exchange Rate
+      Role: !Sub arn:aws:iam::${AWS::AccountId}:role/dls_compro_lambda_${Environment}_role
+      Layers:
+        - !Ref LTILambdaDependencies
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            RestApiId: !Ref SeedApiGateway
+            Path: /exchange
+            Method: POST
+
+  LTILambdaDependencies:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+        LayerName: LtiLambdaDependencies
+        Description: Dependencies for lambdas
+        ContentUri: dependencies/
+        CompatibleRuntimes:
+          - nodejs12.x
+        RetentionPolicy: Retain
+
+  # ######## Frontend #########
+  CloudFrontOriginAccessIdentity:
+    Type: 'AWS::CloudFront::CloudFrontOriginAccessIdentity'
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Ref S3Bucket
+    
+  CloudfrontDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Comment: "Cloudfront distribution for serverless Admin Console website"
+        DefaultRootObject: "index.html"
+        Enabled: true
+        HttpVersion: http2
+        # List of origins that Cloudfront will connect to
+        Origins:
+          - Id: s3-website
+            DomainName: !GetAtt S3Bucket.DomainName
+            S3OriginConfig:
+              # Restricting Bucket access through an origin access identity
+              OriginAccessIdentity: 
+                Fn::Sub: 'origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}'
+        # To connect the CDN to the origins you need to specify behaviors
+        DefaultCacheBehavior:
+          # Compress resources automatically ( gzip )
+          Compress: 'true'
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: s3-website
+          ViewerProtocolPolicy : redirect-to-https
+
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      # Change bucket name to reflect your website
+      BucketName: !If [HasPredefinedBucket, !Sub "reader-lti-admin-${Environment}-ui", !Sub "reader-lti-admin-${Environment}-ui-${AWS::AccountId}" ]
+      
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+      # Restricting access to cloudfront only.
+        Statement:
+          -
+            Effect: Allow
+            Action: 's3:GetObject'
+            Resource:
+              - !Sub "arn:aws:s3:::${S3Bucket}/*"
+            Principal:
+              AWS: !Sub "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}"
+
+Outputs:
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
+  ExchangeRateFunction:
+    Description: "Exchange Rate Lambda Function ARN"
+    Value: !GetAtt ExchangeRateFunction.Arn
+  SeedApiGateway:
+    Description: "Seed API EndPoint"
+    Value: !Sub "https://${SeedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}"
+    

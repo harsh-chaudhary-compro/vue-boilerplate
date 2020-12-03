@@ -1,10 +1,5 @@
-<template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
-</template>
-
+<style scoped lang="scss" src="./Home.scss"></style>
+<template src="./Home.html"></template>
 <script>
 // @ is an alias to /src
 import HelloWorld from '@/components/HelloWorld.vue';
