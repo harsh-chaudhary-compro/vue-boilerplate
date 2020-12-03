@@ -1,7 +1,10 @@
 {
   "name": "vue-boilerplate",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": true,
+  "engines" : {
+    "node" : ">=12.18.3"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",

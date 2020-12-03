@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "seed for dynamoDB",
   "main": "index.js",
+  "engines" : {
+    "node" : ">=12.18.3"
+  },
   "scripts": {
     "local": "ENV=local PORT=8000 REGION=us-west-2 node dynamoDB/index.js",
     "dev": "ENV=dev REGION=us-west-2 node dynamoDB/index.js",
