@@ -1,0 +1,18 @@
+{
+  "app": "cup-ecommerce-dev-stack",
+  "region": "us-east-1",
+  "stack": "cup-ecommerce-dev-stack",
+  "webstack": "cup-ecommerce-dev-stack-ui",
+  "s3":{
+    "bucket_name": "cup-ecommerce-dev-stack",
+    "bucket_prefix": "sam",
+    "packaged_filename": "packaged.yaml",
+    "web_packaged_filename": "web_packaged.yaml",
+    "web_template": "web_template.yaml"
+  },
+  "distributionId": "",
+  "parameters":{
+    "Environment": "dev",
+    "WebBucketName": "cup-ecommerce-dev-stack-ui"
+  }
+}

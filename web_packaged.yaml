@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Ecommerce Checkout Frontend AWS Resources.
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+  WebBucketName:
+    Type: String
+    Default: cup-ecommerce-dev-stack-ui
+Resources:
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: Permissions for CloudFront to access S3
+  CloudfrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: Cloudfront distribution for serverless CUP Ecommerce website
+        DefaultRootObject: index.html
+        Enabled: true
+        HttpVersion: http2
+        Origins:
+        - Id: s3-website
+          DomainName:
+            Fn::GetAtt:
+            - S3Bucket
+            - DomainName
+          S3OriginConfig:
+            OriginAccessIdentity:
+            - 'Fn::Sub:': origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}
+        CustomErrorResponses:
+        - ErrorCode: 403
+          ResponseCode: 200
+          ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          Compress: 'true'
+          AllowedMethods:
+          - GET
+          - HEAD
+          - OPTIONS
+          ForwardedValues:
+            QueryString: false
+          TargetOriginId: s3-website
+          ViewerProtocolPolicy: redirect-to-https
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName:
+        Ref: WebBucketName
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: S3Bucket
+      PolicyDocument:
+        Statement:
+        - Effect: Allow
+          Action:
+          - s3:GetObject
+          - s3:PutObject
+          Resource:
+          - Fn::Sub: arn:aws:s3:::${S3Bucket}/*
+          Principal:
+            AWS:
+              Fn::Sub: arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity
+                ${CloudFrontOriginAccessIdentity}
+Outputs:
+  S3Bucket:
+    Description: S3 Bucket Resource
+    Value:
+      Ref: S3Bucket
+  CloudfrontDistributionName:
+    Description: Cloudfront Distribution Domain Name
+    Value:
+      Fn::GetAtt:
+      - CloudfrontDistribution
+      - DomainName
+  CloudfrontDistributionId:
+    Description: Cloudfront Distribution Id
+    Value:
+      Ref: CloudfrontDistribution
