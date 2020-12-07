@@ -32,10 +32,10 @@ fi
 
 yell "------------------------------------------------"
 # Read values from config file, also convert output to empty string instead of null if key doesn't exist
-config_s3_bucket_name=`jq -r .sam_s3.bucket_name//empty ${computed_file_path}`
+config_s3_bucket_name=`jq -r .s3.bucket_name//empty ${computed_file_path}`
 
 # Ternary statement - https://stackoverflow.com/a/3953712/4556029
-[ -z $config_s3_bucket_name ] && die "Required config 'sam_s3.bucket_name' Not Defined" || yell "sam_s3.bucket_name = ${config_s3_bucket_name}"
+[ -z $config_s3_bucket_name ] && die "Required config 's3.bucket_name' Not Defined" || yell "s3.bucket_name = ${config_s3_bucket_name}"
 
 yell "------------------------------------------------"
 
@@ -44,7 +44,7 @@ case $1 in
     'build')
         yell "Building application"
 
-        sbuild="npm build --prefix ./frontend/"
+        sbuild="npm run build --prefix ./frontend/"
 
         try $sbuild
         ;;
