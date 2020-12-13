@@ -3,7 +3,7 @@
   "region": "us-west-2",
   "stack": "dls-compro-prod-sam-seed",
   "s3":{
-    "bucket_name": "dls-compro-prod-sam-seed",
+    "bucket_name": "sam-ecom-checkout-prod",
     "bucket_prefix": "sam",
     "packaged_filename": "packaged.yaml"
   },
