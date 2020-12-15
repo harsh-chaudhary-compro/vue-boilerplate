@@ -51,7 +51,7 @@ case $1 in
     'deploy')
         yell "Deploying application"
 
-        sdeploy="aws s3 cp ./frontend/dist/ s3://${config_s3_bucket_name} --recursive"
+        sdeploy="aws s3 sync ./frontend/dist/ s3://${config_s3_bucket_name} --delete"
 
         try $sdeploy
         ;;
@@ -59,3 +59,4 @@ case $1 in
         die "Unsupported action: $1"
         ;;
 esac
+
